@@ -18,9 +18,5 @@
     "@earendil-works/pi-coding-agent": "^0.82.1",
     "discord.js": "^14.27.0",
     "typebox": "^1.0.63"
-  },
-  "overrides": {
-    "brace-expansion": "^5.0.8",
-    "minimatch": "^10.2.6"
   }
 }
