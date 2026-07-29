@@ -3,7 +3,7 @@ import { open, readFile } from "node:fs/promises";
 import { loadConfig, validateConfig } from "../lib/config.js";
 import { ensureDir, removeIfExists } from "../lib/fs.js";
 import { getPaths } from "../lib/paths.js";
-import { PiDiscordDaemon } from "../daemon/runtime.js";
+import { loadRuntimePlugin } from "../daemon/runtime-plugin.js";
 
 function parseArgs(argv) {
   let workspace;
@@ -24,6 +24,8 @@ const validation = validateConfig(config);
 if (validation.errors.length > 0) {
   throw new Error(`Invalid pi-discord config:\n- ${validation.errors.join("\n- ")}`);
 }
+const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+const runtime = await loadRuntimePlugin({ config, paths, coreVersion: packageJson.version });
 
 await ensureDir(paths.runDir);
 
@@ -57,9 +59,8 @@ try {
 await lockHandle.writeFile(JSON.stringify({ pid: process.pid }));
 await lockHandle.close();
 
-const daemon = new PiDiscordDaemon({ paths, config });
 const shutdown = async (exitCode = 0) => {
-  await daemon.stop().catch(() => undefined);
+  await runtime.stop().catch(() => undefined);
   process.exit(exitCode);
 };
 
@@ -79,9 +80,9 @@ process.on("unhandledRejection", (error) => {
 });
 
 try {
-  await daemon.start();
+  await runtime.start();
 } catch (error) {
   console.error(error);
-  await daemon.stop().catch(() => undefined);
+  await runtime.stop().catch(() => undefined);
   process.exit(1);
 }

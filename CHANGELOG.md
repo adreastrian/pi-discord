@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Add versioned runtime-plugin seam for trusted private runtime adapters.
+- Allow runtime adapters to own complete Discord command manifests and daemon lifecycle.
+
 ## [0.3.0] - 2026-07-29
 
 - Migrate from deprecated `@mariozechner/pi-coding-agent` to `@earendil-works/pi-coding-agent` `0.82.x`.

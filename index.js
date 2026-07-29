@@ -1,6 +1,7 @@
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 
 import { readFile } from "node:fs/promises";
+import { loadRuntimePlugin } from "./daemon/runtime-plugin.js";
 import { createDefaultConfig, loadConfig, normalizeConfig, saveConfig, validateConfig } from "./lib/config.js";
 import { syncSlashCommands } from "./lib/discord-commands.js";
 import { pathExists } from "./lib/fs.js";
@@ -55,6 +56,12 @@ async function tryLoadConfig(paths) {
   } catch (error) {
     return { error: String(error) };
   }
+}
+
+async function syncConfiguredCommands(config, paths) {
+  const packageJson = JSON.parse(await readFile(new URL("./package.json", import.meta.url), "utf8"));
+  const runtime = await loadRuntimePlugin({ config, paths, coreVersion: packageJson.version });
+  return syncSlashCommands(config, runtime.slashCommands);
 }
 
 async function getEditableConfigText(paths) {
@@ -122,7 +129,7 @@ export default function (pi) {
           const canSync = nextConfig.registerCommandsGlobally || nextConfig.allowedGuildIds.length > 0;
           if (canSync) {
             try {
-              const syncResult = await syncSlashCommands(nextConfig);
+              const syncResult = await syncConfiguredCommands(nextConfig, paths);
               text += `\n\nSynced ${syncResult.count} slash command(s) to ${syncResult.scope} scope.`;
             } catch (error) {
               text += `\n\nSlash command sync failed: ${String(error)}`;
@@ -174,7 +181,7 @@ export default function (pi) {
           return;
         }
         try {
-          const result = await syncSlashCommands(loaded.config);
+          const result = await syncConfiguredCommands(loaded.config, paths);
           sendText(pi, `Synced ${result.count} slash command(s) to ${result.scope} scope.`);
         } catch (error) {
           sendText(pi, `Slash command sync failed: ${String(error)}`);
@@ -197,7 +204,7 @@ export default function (pi) {
           const canSync = loaded.config.registerCommandsGlobally || loaded.config.allowedGuildIds.length > 0;
           if (canSync) {
             try {
-              await syncSlashCommands(loaded.config);
+              await syncConfiguredCommands(loaded.config, paths);
             } catch (error) {
               sendText(pi, `Slash command sync failed: ${String(error)}`);
               return;

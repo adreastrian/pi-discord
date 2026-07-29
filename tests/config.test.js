@@ -98,6 +98,31 @@ test("saveConfig persists normalized config", async () => {
   });
 });
 
+test("runtime plugin descriptor preserves opaque JSON options", () => {
+  const paths = getPaths({ agentDir: "/tmp/agent", workspaceDir: "/tmp/agent/pi-discord" });
+  const config = normalizeConfig(paths, {
+    runtimePlugin: {
+      module: " /tmp/private-plugin.mjs ",
+      integrity: " sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= ",
+      options: { nested: { enabled: true }, values: [1, "two"] },
+    },
+  });
+
+  assert.deepEqual(config.runtimePlugin, {
+    module: "/tmp/private-plugin.mjs",
+    integrity: "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    options: { nested: { enabled: true }, values: [1, "two"] },
+  });
+  assert.deepEqual(validateConfig(config).errors, ["Missing `botToken`.", "Missing `applicationId`."]);
+});
+
+test("validation rejects relative runtime plugin modules", () => {
+  const paths = getPaths({ agentDir: "/tmp/agent", workspaceDir: "/tmp/agent/pi-discord" });
+  const config = normalizeConfig(paths, { runtimePlugin: { module: "./plugin.mjs" } });
+  const result = validateConfig(config);
+  assert.ok(result.errors.some((entry) => entry.includes("absolute path")));
+});
+
 test("validation rejects fractional runtime timing and concurrency values", () => {
   const config = createDefaultConfig(getPaths({ agentDir: "/tmp/agent", workspaceDir: "/tmp/agent/pi-discord" }));
   config.globalConcurrency = 1.5;

@@ -303,6 +303,36 @@ which reports whether the daemon is running, its pid, known route count, and cur
 
 **Detached daemon**: The Discord gateway connection runs in a separate long-lived process (`pi-discord-daemon`) rather than inside Pi's runtime. This lets the bot stay online independently of any interactive Pi session.
 
+## Runtime plugins
+
+Trusted deployments can replace the built-in Discord runtime policy while keeping pi-discord's config, command synchronization, lock, and process lifecycle:
+
+```json
+{
+  "runtimePlugin": {
+    "module": "/absolute/path/to/runtime-plugin.mjs",
+    "integrity": "sha256-optionalBase64Digest=",
+    "options": {}
+  }
+}
+```
+
+Plugin module contract:
+
+```js
+export const apiVersion = 1;
+export async function createRuntime({ coreVersion, config, options, paths }) {
+  return {
+    id: "my-runtime",
+    slashCommands: [],
+    async start() {},
+    async stop() {},
+  };
+}
+```
+
+`createRuntime()` must not start sockets, timers, or subprocesses. `start()` owns startup; `stop()` must be idempotent and clean partial startup. Plugin errors fail closed. Runtime plugins execute with full user permissions; load only trusted absolute paths and use `integrity` when deployment files are immutable.
+
 ## Safety model
 
 A few constraints are deliberate.
