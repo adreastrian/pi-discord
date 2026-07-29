@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-29
+
+- Migrate from deprecated `@mariozechner/pi-coding-agent` to `@earendil-works/pi-coding-agent` `0.82.x`.
+- Replace removed `AuthStorage` and `ModelRegistry` SDK usage with `ModelRuntime`.
+- Update Discord.js and TypeBox dependencies to current packages.
+
 ## [0.2.5] - 2026-04-04
 
 - Compatibility update for pi `0.65.x`: migrate session host model registry initialization to `await ModelRegistry.create(...)` and bump `@mariozechner/pi-coding-agent` to `^0.65.0`.
