@@ -14,8 +14,10 @@
       "./index.js"
     ]
   },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
   "dependencies": {
-    "@earendil-works/pi-coding-agent": "^0.82.1",
     "discord.js": "^14.27.0",
     "typebox": "^1.0.63"
   }
