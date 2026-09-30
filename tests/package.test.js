@@ -7,4 +7,6 @@ test("host SDK is a wildcard peer, not a bundled dependency", () => {
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
   assert.equal(pkg.dependencies["@earendil-works/pi-coding-agent"], undefined);
   assert.equal(pkg.dependencies["@earendil-works/pi-tui"], undefined);
+  assert.equal(pkg.peerDependencies.typebox, "*");
+  assert.equal(pkg.dependencies.typebox, undefined);
 });
